@@ -1,0 +1,7 @@
+#FROM is generated dynamically by the Makefile
+
+ADD bin/rbd /bin/rbd
+ADD bin/run.sh /bin/run.sh
+RUN chmod +x /bin/rbd /bin/run.sh
+
+ENTRYPOINT [ "/bin/run.sh" ]
