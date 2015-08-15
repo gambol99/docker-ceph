@@ -10,6 +10,7 @@ RBD_DIR=rbd
 DOCKER_IMAGE="gambol99/store-client:0.0.1"
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
+RET=1
 
 failed() {
   [ -n "$@" ] && { echo "$@"; exit 1; }
@@ -24,6 +25,11 @@ run_rbd() {
     -v /sys:/sys \
     ${DOCKER_IMAGE} \
     rbd $@
+  RET=$?
+}
+
+run_rbd_exec() {
+  /usr/bin/docker exec ceph-client rbd $@
   RET=$?
 }
 
@@ -89,9 +95,10 @@ kernel_module
 
 # step: process the command
 case "$COMMAND" in
+  lock)     run_rbd_exec $@;    ;;
   map)      mapping_image $@;   ;;
   unmap)    unmapping_image $@; ;;
   *)        run_rbd $@;         ;;
 esac
 
-exit 0
+exit $RET

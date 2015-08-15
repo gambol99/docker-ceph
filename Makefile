@@ -1,6 +1,6 @@
 
 
-TEMPLATE_IMAGES=admin daemon gateway metadata monitor client
+TEMPLATE_IMAGES=admin daemon gateway metadata monitor client manager
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 BUILD_TAG=0.0.1
 IMAGE_PREFIX=gambol99/
@@ -18,6 +18,8 @@ METADATA_IMAGE = $(IMAGE_PREFIX)store-metadata:$(BUILD_TAG)
 METADATA_DEV_IMAGE = $(REGISTRY)$(METADATA_IMAGE)
 MONITOR_IMAGE = $(IMAGE_PREFIX)store-monitor:$(BUILD_TAG)
 MONITOR_DEV_IMAGE = $(REGISTRY)$(MONITOR_IMAGE)
+MANAGER_IMAGE = $(IMAGE_PREFIX)store-manager:$(BUILD_TAG)
+MANAGER_DEV_IMAGE = $(REGISTRY)$(MANAGER_IMAGE)
 
 default: build
 
@@ -53,10 +55,10 @@ release-client:
 	sudo docker push $(CLIENT_IMAGE)
 
 release:
-	sudo docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
-	sudo docker push $(DAEMON_DEV_IMAGE)
-	sudo docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
-	sudo docker push $(MONITOR_DEV_IMAGE)
+	#sudo docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	#sudo docker push $(DAEMON_DEV_IMAGE)
+	#sudo docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+	#sudo docker push $(MONITOR_DEV_IMAGE)
 	make release-client
 
 full-release: release
