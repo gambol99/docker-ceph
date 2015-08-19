@@ -25,9 +25,9 @@ default: build
 
 check-docker:
 	@if [ -z $$(which docker) ]; then \
-          echo "Missing \`docker\` client which is required for development"; \
-          exit 2; \
-        fi
+    echo "Missing \`docker\` client which is required for development"; \
+    exit 2; \
+  fi
 
 build: check-docker
 	@# Build base as normal
@@ -55,10 +55,10 @@ release-client:
 	sudo docker push $(CLIENT_IMAGE)
 
 release:
-	#sudo docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
-	#sudo docker push $(DAEMON_DEV_IMAGE)
-	#sudo docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
-	#sudo docker push $(MONITOR_DEV_IMAGE)
+	sudo docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	sudo docker push $(DAEMON_DEV_IMAGE)
+	sudo docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+	sudo docker push $(MONITOR_DEV_IMAGE)
 	make release-client
 
 full-release: release

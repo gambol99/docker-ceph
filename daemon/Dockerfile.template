@@ -7,5 +7,6 @@ ENTRYPOINT ["/app/bin/boot"]
 
 # remove osd from copy-on-write
 VOLUME /var/lib/ceph/osd
+VOLUME /var/lib/ceph/journal
 
 CMD ["ceph-osd"]
