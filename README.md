@@ -16,6 +16,8 @@ Please add any issues you find with this software to the
 
 The store component is comprised of four containers:
 
+* [store-client] - a utility container taken from store-base which contains nothing but the ceph commands (the admin / monitor keyrings has been removed)
+* [store-manager] - a cheeky utility service used to automate the unlock on rbd volumes from ec2 instances which have terminated or stopped
 * [store-daemon](https://index.docker.io/u/deis/store-daemon/) - the daemon which serves data
 (in Ceph, this is an object store daemon, or OSD)
 * [store-gateway](https://index.docker.io/u/deis/store-gateway/) - the blob store gateway,
