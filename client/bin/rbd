@@ -20,6 +20,7 @@ run_rbd() {
   /usr/bin/docker run --rm \
     --privileged --net host \
     -v /opt/bin:/opt/bin \
+    -v /etc/ceph:/etc/ceph:ro \
     -v /proc:/host/proc \
     -v /dev:/dev \
     -v /sys:/sys \
@@ -34,11 +35,11 @@ run_rbd_exec() {
 }
 
 get_device_from_image() {
-  run_rbd "showmapped" | grep "$1" | tail -n1 | awk "{ print \$5 }"
+  run_rbd "showmapped" | grep "${1} " | tail -n1 | awk "{ print \$5 }"
 }
 
 image_mapped() {
-  run_rbd "showmapped" | grep -q "$1" && return 0 || return 1
+  run_rbd "showmapped" | grep -q "${1} " && return 0 || return 1
 }
 
 kernel_module() {
