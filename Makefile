@@ -1,13 +1,17 @@
 
 
-TEMPLATE_IMAGES=admin daemon gateway metadata monitor client manager
+TEMPLATE_IMAGES=admin backup daemon gateway metadata monitor client manager
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 BUILD_TAG=0.0.1
 IMAGE_PREFIX=gambol99/
+#IMAGE_PREFIX=ukhomeofficedigital/
 
 REGISTRY=docker.io/
+#REGISTRY=quay.io/
 ADMIN_IMAGE = $(IMAGE_PREFIX)store-admin:$(BUILD_TAG)
 ADMIN_DEV_IMAGE = $(REGISTRY)$(ADMIN_IMAGE)
+BACKUP_IMAGE = $(IMAGE_PREFIX)store-backup:$(BUILD_TAG)
+BACKUP_DEV_IMAGE = $(REGISTRY)$(BACKUP_IMAGE)
 CLIENT_IMAGE = $(IMAGE_PREFIX)store-client:$(BUILD_TAG)
 CLIENT_DEV_IMAGE = $(REGISTRY)$(CLIENT_IMAGE)
 DAEMON_IMAGE = $(IMAGE_PREFIX)store-daemon:$(BUILD_TAG)
@@ -64,8 +68,9 @@ release:
 full-release: release
 	sudo docker tag -f $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
 	sudo docker push $(ADMIN_DEV_IMAGE)
+	sudo docker tag -f $(BACKUP_IMAGE) $(BACKUP_DEV_IMAGE)
+	sudo docker push $(BACKUP_DEV_IMAGE)
 	sudo docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	sudo docker push $(GATEWAY_DEV_IMAGE)
 	sudo docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
 	sudo docker push $(METADATA_DEV_IMAGE)
-	

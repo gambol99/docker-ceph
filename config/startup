@@ -1,0 +1,15 @@
+#!/bin/bash
+#
+#   Author: Rohith
+#   Date: 2015-06-15 20:44:47 +0100 (Mon, 15 Jun 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+# step: copy the rdb command into the host
+for i in rbd rbd-image ceph rados; do
+  cp /bin/${i} /opt/bin/${i}
+  chmod +x /opt/bin/${i}
+done
+
+/app/bin/boot

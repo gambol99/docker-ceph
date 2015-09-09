@@ -1,0 +1,148 @@
+#!/bin/bash
+#
+#   Author: Rohith
+#   Date: 2015-09-08 11:39:09 +0100 (Tue, 08 Sep 2015)
+#
+#  vim:ts=2:sw=2:et
+#
+
+VERBOSE=0
+RET=0
+CEPH=${CEPH:-/usr/bin/ceph}
+CEPH_ADDRESS=${CEPH_ADDRESS:-`hostname -i`}
+CEPH_MONITOR_SERVICE=${CEPH_MONITOR_SERVICE:-ceph-monitor}
+CEPH_MONITOR_DIR=${CEPH_MONITOR_DIR:-/var/lib/ceph}
+CEPH_BACKUP_DIR=${CEPH_BACKUP_DIR:-/tmp}
+SYSTEMCTL=${SYSTEMCTL:-/usr/bin/systemctl}
+BUCKET=${BUCKET:-ceph-monitor-backups}
+
+log() {
+  [ $VERBOSE -eq 1 ] && echo "[v] $@"
+}
+
+usage() {
+  cat <<EOF
+  Usage: $(basename $0)
+  -b|--bucket     : the name of the s3 bucket to upload the backups
+  -v|--verbose    : switch on verbose logging mode
+  -h|--help       : display this usage menu
+EOF
+  [ -n "$@" ] && {
+    echo "[error] $@";
+    exit 1;
+  }
+  exit 0
+}
+
+# stop_monitor ... stop the ceph monitor service
+stop_monitor() {
+  log "stopping the ceph monitor service"
+  $SYSTEMCTL stop $CEPH_MONITOR_SERVICE && return 0 || return 1
+}
+
+# start_monitor ... start the ceph monitor service
+start_monitor() {
+  log "starting the ceph monitor service"
+  $SYSTEMCTL start $CEPH_MONITOR_SERVICE && return 0 || return 1
+}
+
+# is_ceph_healthy ... checks to see if the ceph cluster is healthy
+is_ceph_healthy() {
+  log "checking the health of the ceph cluster"
+  $CEPH -s --connect-timeout=10 2>/dev/null | grep -q 'health HEALTH_OK' && return 0 || return 1
+}
+
+# is_ceph_monitor_down ... check if the ceph monitor is actually down
+is_ceph_monitor_down() {
+  log "checking if the ceph monitor is down"
+  $CEPH -s --connect-timeout=10 2>/dev/null | grep -q '1 mons down' && return 0 || return 1
+}
+
+# wait_for_monitor ... waits for the ceph monitor to shutdown gracefully
+wait_for_monitor() {
+  local timeout=10
+  while [ $timeout -gt 0 ]; do
+    if $CEPH -s --connect-timeout=5 2>/dev/null | grep -q '1 mons down'; then
+      return 0
+    fi
+    sleep 5
+    ((timeout--))
+  done
+  log "the ceph monitor has not shutdown with "
+  return 1
+}
+
+# upload_backup ... upload the backup to a S3 bucket
+upload_backup() {
+  local filename="${1}"
+  log "attempting to upload the file: ${filename} to s3://${BUCKET}"
+  aws s3 cp $filename s3://${BUCKET} && return 0 || return 1
+}
+
+# monitor_backup ... perform a backup of the monitor directory
+monitor_backup() {
+  local backup="$1"
+  log "performing a backup of the monitor diretory: $CEPH_MONITOR_DIR, to: ${backup}"
+  tar jcvf ${backup} ${CEPH_MONITOR_DIR}/ 2>/dev/null
+  [ $? -ne 0 ] && return 0 || return 0
+}
+
+# ceph_backup ... perform a backup of the ceph monitor directory
+ceph_backup() {
+  local localdate=`date +"%H%M%S-%d-%m-%Y-%Z"`
+  local filename="ceph-monitor-${CEPH_ADDRESS}-${localdate}.tar.bz2"
+  local backup_path="${CEPH_BACKUP_DIR}/${filename}"
+
+  log "attemping to perform a backup of the ceph monitor: ${HOSTNAME}"
+  # step: we will ONLY perform a backup if the cluster is healthy
+  is_ceph_healthy || usage "skipping the ceph backup as the cluster is not in a healthy state"
+  # step: shutdown the ceph monitor for a consistent backup
+  stop_monitor || usage "failed attemping to stop the service: ${CEPH_MONITOR_SERVICE}"
+  # step: check the monitor is actually down
+  wait_for_monitor || usage "the ceph monitor has not shut down gracefully, exitting the backup"
+  # step: perform a backup of the monitor data
+  if monitor_backup ${backup_path}; then
+    # step: start the ceph monitor
+    start_monitor || log "failed to start the ceph monitor again"
+    # step: upload the backup to S3
+    if upload_backup ${backup_path}; then
+      log "successfully upload the backup: ${backup_path} to s3"
+      # step: we can delete the backup afterwards
+      rm -f ${backup_path}
+    else
+      log "failed to upload the backup to s3"
+      RET=1
+    fi
+  else
+    RET=1
+    # step: start the ceph monitor
+    start_monitor || log "failed to start the ceph monitor again"
+    # step:
+    log "failed to perform a backup of ceph monitor"
+  fi
+}
+
+# step: get the command line arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -b|--bucket)  BUCKET=$2;      shift 2 ;;
+    -v|--verbose) VERBOSE=1;      shift 1 ;;
+    -h|--help)    usage;                  ;;
+    *)                            shift 1 ;;
+  esac
+done
+
+# step: validate the input and commands
+[ -z "$BUCKET" ] && usage "you have not specified a s3 bucket to upload the backups"
+[ -e "$CEPH_MONITOR_DIR" ] || usage "the ceph monitor directory: $CEPH_MONITOR_DIR does not exists"
+[ -d "$CEPH_MONITOR_DIR" ] || usage "the ceph monitor directory: $CEPH_MONITOR_DIR is not a directory"
+[ -e "$CEPH_BACKUP_DIR" ] || usage "the backup directory: $CEPH_BACKUP_DIR does not exists"
+[ -d "$CEPH_BACKUP_DIR" ] || usage "the backup directory: $CEPH_BACKUP_DIR is not a directory"
+[[ "$CEPH_ADDRESS" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]] || usage "the ceph ip address: $CEPH_ADDRESS is not a valid IPV4 address"
+
+log "performing a backup of the ceph monitor, host: ${HOSTNAME}"
+
+# step: perform a ceph backup
+ceph_backup
+
+exit $RET
