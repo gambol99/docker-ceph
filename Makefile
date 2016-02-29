@@ -3,7 +3,7 @@
 TEMPLATE_IMAGES=admin backup daemon gateway metadata monitor client manager
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 BUILD_TAG=v9.2.0
-IMAGE_PREFIX ?= "docker.io/gambol99/"
+IMAGE_PREFIX ?= quay.io/ukhomeofficedigital/
 
 ADMIN_IMAGE = $(IMAGE_PREFIX)store-admin:$(BUILD_TAG)
 ADMIN_DEV_IMAGE = $(REGISTRY)$(ADMIN_IMAGE)
