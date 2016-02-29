@@ -51,25 +51,18 @@ full-clean: check-docker
 		docker images -q $(REGISTRY)/$(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
 	)
 
-release-client:
-	docker tag -f $(CLIENT_IMAGE) $(CLIENT_DEV_IMAGE)
-	docker push $(CLIENT_IMAGE)
-
-release:
-	docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
-	docker push $(DAEMON_DEV_IMAGE)
-	docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
-	docker push $(MONITOR_DEV_IMAGE)
-	make release-client
-
-full-release: release
+release: 
 	docker tag -f $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
 	docker push $(ADMIN_DEV_IMAGE)
 	docker tag -f $(BACKUP_IMAGE) $(BACKUP_DEV_IMAGE)
 	docker push $(BACKUP_DEV_IMAGE)
-	docker tag -f $(CONFIG_IMAGE) $(CONFIG_DEV_IMAGE)
-	docker push $(CONFIG_DEV_IMAGE)
+	docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	docker push $(DAEMON_DEV_IMAGE)
+	docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+	docker push $(MONITOR_DEV_IMAGE)
 	docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	docker push $(GATEWAY_DEV_IMAGE)
 	docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
 	docker push $(METADATA_DEV_IMAGE)
+	docker tag -f $(CLIENT_IMAGE) $(CLIENT_DEV_IMAGE)
+	docker push $(CLIENT_IMAGE)
