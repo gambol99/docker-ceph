@@ -8,7 +8,7 @@
 
 # step: copy the rdb command into the host
 for i in rbd rbd-image ceph rados; do
-  cp /bin/${i} /opt/bin/${i}
+  cp /app/bin/${i} /opt/bin/${i}
   chmod +x /opt/bin/${i}
 done
 

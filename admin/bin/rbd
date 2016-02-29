@@ -7,7 +7,7 @@
 #
 RBD_MODULE=rbd
 RBD_DIR=rbd
-DOCKER_IMAGE="gambol99/ceph-config:develop"
+DOCKER_IMAGE="gambol99/store-admin:v9.2.0"
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
 
@@ -16,7 +16,7 @@ failed() {
 }
 
 run_rdb() {
-  /usr/bin/docker exec ceph-config rbd $@ 2>&1
+  /usr/bin/docker exec ceph-admin rbd $@ 2>&1
   [ $? -ne 0 ] && exit $?
 }
 
@@ -84,7 +84,7 @@ unmapping_image() {
   fi
   # step: remove the device
   run_rdb $@
-  
+
   # step: remove the symlink
   [ -n "${IMAGE_LINK}" -a -L "${IMAGE_LINK}" ] && sudo rm -f $IMAGE_LINK
 }

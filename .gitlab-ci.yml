@@ -1,0 +1,10 @@
+
+stages:
+- build
+
+build:
+  stage: build
+  script:
+    - apk update
+    - apk add make
+    - make
