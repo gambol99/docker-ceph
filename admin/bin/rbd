@@ -7,21 +7,24 @@
 #
 RBD_MODULE=rbd
 RBD_DIR=rbd
-DOCKER_IMAGE="gambol99/store-client:v9.2.0"
+DOCKER_IMAGE="gambol99/store-admin:v9.2.0"
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
-RET=1
 
 failed() {
   [ -n "$@" ] && { echo "$@"; exit 1; }
 }
 
-run_rbd() {
+run_rdb() {
+  /usr/bin/docker exec ceph-admin rbd $@ 2>&1
+  [ $? -ne 0 ] && exit $?
+}
+
+run_rbd_raw() {
   /usr/bin/docker run --rm \
     --privileged --net host \
-    -v /opt/bin:/opt/bin \
-    -v /etc/ceph:/etc/ceph:ro \
     -v /proc:/host/proc \
+    -v /etc/ceph:/etc/ceph:ro \
     -v /dev:/dev \
     -v /sys:/sys \
     ${DOCKER_IMAGE} \
@@ -29,17 +32,12 @@ run_rbd() {
   RET=$?
 }
 
-run_rbd_exec() {
-  /usr/bin/docker exec ceph-client rbd $@
-  RET=$?
-}
-
 get_device_from_image() {
-  run_rbd "showmapped" | grep "${1} " | tail -n1 | awk "{ print \$5 }"
+  run_rdb "showmapped" | grep "$1" | tail -n1 | awk "{ print \$5 }"
 }
 
 image_mapped() {
-  run_rbd "showmapped" | grep -q "${1} " && return 0 || return 1
+  run_rdb "showmapped" | grep -q "$1" && return 0 || return 1
 }
 
 kernel_module() {
@@ -53,7 +51,7 @@ mapping_image() {
   IMAGE_NAME=${COMMAND_OPTIONS[1]}
 
   # step: map the drive
-  run_rbd $@
+  run_rdb $@
 
   # step: check if the mount was successful
   if image_mapped $IMAGE_NAME; then
@@ -85,7 +83,7 @@ unmapping_image() {
     fi
   fi
   # step: remove the device
-  run_rbd $@
+  run_rdb $@
 
   # step: remove the symlink
   [ -n "${IMAGE_LINK}" -a -L "${IMAGE_LINK}" ] && sudo rm -f $IMAGE_LINK
@@ -96,10 +94,9 @@ kernel_module
 
 # step: process the command
 case "$COMMAND" in
-  lock)     run_rbd_exec $@;    ;;
   map)      mapping_image $@;   ;;
   unmap)    unmapping_image $@; ;;
-  *)        run_rbd $@;         ;;
+  *)        run_rbd_raw $@;     ;;
 esac
 
-exit $RET
+exit 0

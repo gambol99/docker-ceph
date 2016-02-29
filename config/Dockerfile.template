@@ -1,0 +1,9 @@
+#FROM is generated dynamically by the Makefile
+
+ADD ceph /bin/ceph
+ADD rados /bin/rados
+ADD rbd /bin/rbd
+ADD rbd-image /bin/rbd-image
+ADD startup /startup
+
+ENTRYPOINT [ "/startup" ]

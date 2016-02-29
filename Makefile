@@ -2,8 +2,8 @@
 
 TEMPLATE_IMAGES=admin backup daemon gateway metadata monitor client manager
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
-BUILD_TAG=0.0.1
-IMAGE_PREFIX=gambol99/
+BUILD_TAG=v9.2.0
+IMAGE_PREFIX=docker.io/gambol99/
 #IMAGE_PREFIX=ukhomeofficedigital/
 
 REGISTRY=docker.io/
@@ -70,6 +70,8 @@ full-release: release
 	sudo docker push $(ADMIN_DEV_IMAGE)
 	sudo docker tag -f $(BACKUP_IMAGE) $(BACKUP_DEV_IMAGE)
 	sudo docker push $(BACKUP_DEV_IMAGE)
+	sudo docker tag -f $(CONFIG_IMAGE) $(CONFIG_DEV_IMAGE)
+	sudo docker push $(CONFIG_DEV_IMAGE)
 	sudo docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
 	sudo docker push $(GATEWAY_DEV_IMAGE)
 	sudo docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
