@@ -1,0 +1,13 @@
+
+variables:
+  REQUIRE_SUDO: "False"
+
+stages:
+- build
+
+build:
+  stage: build
+  script:
+    - apk update
+    - apk add make
+    - make

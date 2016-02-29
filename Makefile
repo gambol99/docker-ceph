@@ -3,11 +3,11 @@
 TEMPLATE_IMAGES=admin backup daemon gateway metadata monitor client manager
 BUILT_IMAGES=base $(TEMPLATE_IMAGES)
 BUILD_TAG=v9.2.0
-IMAGE_PREFIX=docker.io/gambol99/
-#IMAGE_PREFIX=ukhomeofficedigital/
+SUDO=${SUDO:-"sudo"}
 
-REGISTRY=docker.io/
-#REGISTRY=quay.io/
+[[ "${REQUIRE_SUDO}" == "False" ]] && SUDO=""
+
+IMAGE_PREFIX=${IMAGE_PREFIX:-"docker.io/gambol99/"
 ADMIN_IMAGE = $(IMAGE_PREFIX)store-admin:$(BUILD_TAG)
 ADMIN_DEV_IMAGE = $(REGISTRY)$(ADMIN_IMAGE)
 BACKUP_IMAGE = $(IMAGE_PREFIX)store-backup:$(BUILD_TAG)
@@ -38,41 +38,41 @@ build: check-docker
 	sudo docker build -t $(IMAGE_PREFIX)store-base:$(BUILD_TAG) base/
 	$(foreach I, $(TEMPLATE_IMAGES), \
 		sed -e "s,#FROM is generated dynamically by the Makefile,FROM $(IMAGE_PREFIX)store-base:${BUILD_TAG}," $(I)/Dockerfile.template > $(I)/Dockerfile ; \
-		sudo docker build -t $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
+		$SUDO docker build -t $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) $(I)/ || exit 1; \
 		rm $(I)/Dockerfile ; \
 	)
 
 clean: check-docker
 	$(foreach I, $(BUILT_IMAGES), \
-		sudo docker rmi $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
-		sudo docker rmi $(REGISTRY)/$(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
+		$SUDO docker rmi $(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
+		$SUDO docker rmi $(REGISTRY)/$(IMAGE_PREFIX)store-$(I):$(BUILD_TAG) ; \
 	)
 
 full-clean: check-docker
 	$(foreach I, $(BUILT_IMAGES), \
-		sudo docker images -q $(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
-		sudo docker images -q $(REGISTRY)/$(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
+		$SUDO docker images -q $(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
+		$SUDO docker images -q $(REGISTRY)/$(IMAGE_PREFIX)store-$(I) | xargs docker rmi -f ; \
 	)
 
 release-client:
-	sudo docker tag -f $(CLIENT_IMAGE) $(CLIENT_DEV_IMAGE)
-	sudo docker push $(CLIENT_IMAGE)
+	$SUDO docker tag -f $(CLIENT_IMAGE) $(CLIENT_DEV_IMAGE)
+	$SUDO docker push $(CLIENT_IMAGE)
 
 release:
-	sudo docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
-	sudo docker push $(DAEMON_DEV_IMAGE)
-	sudo docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
-	sudo docker push $(MONITOR_DEV_IMAGE)
+	$SUDO docker tag -f $(DAEMON_IMAGE) $(DAEMON_DEV_IMAGE)
+	$SUDO docker push $(DAEMON_DEV_IMAGE)
+	$SUDO docker tag -f $(MONITOR_IMAGE) $(MONITOR_DEV_IMAGE)
+	$SUDO docker push $(MONITOR_DEV_IMAGE)
 	make release-client
 
 full-release: release
-	sudo docker tag -f $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
-	sudo docker push $(ADMIN_DEV_IMAGE)
-	sudo docker tag -f $(BACKUP_IMAGE) $(BACKUP_DEV_IMAGE)
-	sudo docker push $(BACKUP_DEV_IMAGE)
-	sudo docker tag -f $(CONFIG_IMAGE) $(CONFIG_DEV_IMAGE)
-	sudo docker push $(CONFIG_DEV_IMAGE)
-	sudo docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
-	sudo docker push $(GATEWAY_DEV_IMAGE)
-	sudo docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
-	sudo docker push $(METADATA_DEV_IMAGE)
+	$SUDO docker tag -f $(ADMIN_IMAGE) $(ADMIN_DEV_IMAGE)
+	$SUDO docker push $(ADMIN_DEV_IMAGE)
+	$SUDO docker tag -f $(BACKUP_IMAGE) $(BACKUP_DEV_IMAGE)
+	$SUDO docker push $(BACKUP_DEV_IMAGE)
+	$SUDO docker tag -f $(CONFIG_IMAGE) $(CONFIG_DEV_IMAGE)
+	$SUDO docker push $(CONFIG_DEV_IMAGE)
+	$SUDO docker tag -f $(GATEWAY_IMAGE) $(GATEWAY_DEV_IMAGE)
+	$SUDO docker push $(GATEWAY_DEV_IMAGE)
+	$SUDO docker tag -f $(METADATA_IMAGE) $(METADATA_DEV_IMAGE)
+	$SUDO docker push $(METADATA_DEV_IMAGE)
