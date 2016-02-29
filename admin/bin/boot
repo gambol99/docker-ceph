@@ -5,8 +5,6 @@
 
 ETCD="${ETCD:-127.0.0.1:4001}"
 
-confd -node $ETCD --confdir /app --log-level error --interval 5 &
-
 # loop forever until the container is stopped
 while true; do
   sleep 1

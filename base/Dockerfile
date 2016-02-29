@@ -1,4 +1,4 @@
-FROM ubuntu-debootstrap:14.04
+FROM ubuntu:14.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -9,5 +9,4 @@ RUN DOCKER_BUILD=true /tmp/build.sh
 # Add shared confd configuration
 ADD . /app
 
-ENV DEIS_RELEASE 1.10.0-dev
-
+ENV DEIS_RELEASE 1.13.0-dev
