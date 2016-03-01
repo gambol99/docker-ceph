@@ -5,7 +5,7 @@
 #
 #  vim:ts=2:sw=2:et
 #
-cp /bin/rbd /usr/bin/${i} && chmod +x /usr/bin/${i}
+cp /bin/rbd /opt/bin/${i} && chmod +x /opt/bin/${i}
 
 # loop forever until the container is stopped
 if [[ $1 == "sync" ]]; then
