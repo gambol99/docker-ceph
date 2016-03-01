@@ -1,5 +1,8 @@
 #FROM is generated dynamically by the Makefile
 
+ENV REGISTRY BUILD_REGISTRY
+ENV TAG BUILD_TAG
+
 ADD bin/rbd /bin/rbd
 ADD bin/run.sh /bin/run.sh
 RUN chmod +x /bin/rbd /bin/run.sh

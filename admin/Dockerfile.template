@@ -1,5 +1,8 @@
 #FROM is generated dynamically by the Makefile
 
+ENV REGISTRY BUILD_REGISTRY
+ENV TAG BUILD_TAG
+
 WORKDIR /app
 
 ADD bin/boot /app/bin/boot
