@@ -1,6 +1,7 @@
 
 stages:
 - build
+- deploy
 
 build:
   stage: build
@@ -8,3 +9,16 @@ build:
     - apk update
     - apk add make
     - make
+
+deploy:
+  stage: deploy
+  script:
+    - export BUILD_TAG=$CI_BUILD_TAG
+    - docker login -u ${REGISTRY_USERNAME} -p ${REGISTRY_TOKEN} -e ${REGISTRY_EMAIL} ${REGISTRY_URL}
+    - apk update
+    - apk add make
+    - make
+    - make release
+  only:
+    - tags
+    - /^v([0-9]{1,3}[.]?){3}$/

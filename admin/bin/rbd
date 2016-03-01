@@ -7,7 +7,7 @@
 #
 RBD_MODULE=rbd
 RBD_DIR=rbd
-DOCKER_IMAGE="quay.io/ukhomeofficedigital/store-admin:v9.2.0"
+RBD_DIR=${REGISTRY}/${TAG}
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
 
