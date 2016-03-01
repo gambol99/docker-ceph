@@ -7,7 +7,7 @@
 #
 RBD_MODULE=rbd
 RBD_DIR=rbd
-DOCKER_IMAGE="gambol99/store-client:v9.2.0"
+DOCKER_IMAGE="quay.io/ukhomeofficedigital/store-client:v9.2.0"
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
 RET=1
