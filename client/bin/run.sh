@@ -9,7 +9,7 @@
 sed -i "s/REGISTRY/${REGISTRY}/" /bin/rbd
 sed -i "s/TAG/${TAG}/" /bin/rbd
 
-cp /bin/rbd /opt/bin/${i} && chmod +x /opt/bin/${i}
+cp /bin/rbd /opt/bin/rbd && chmod +x /opt/bin/rbd
 
 # loop forever until the container is stopped
 if [[ $1 == "sync" ]]; then
