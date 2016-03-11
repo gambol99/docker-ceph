@@ -5,6 +5,9 @@
 #
 #  vim:ts=2:sw=2:et
 #
+# step: somewhat hacky where to pass down the version and registry
+sed -i "s,REGISTRY,${REGISTRY}," /app/bin/rbd
+sed -i "s,TAG,${TAG}," /app/bin/rbd
 
 # step: copy the rdb command into the host
 for i in rbd rbd-image ceph rados; do
