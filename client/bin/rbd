@@ -1,12 +1,9 @@
 #!/usr/bin/bash
 #
-#   Author: Rohith
-#   Date: 2015-06-12 16:50:42 +0100 (Fri, 12 Jun 2015)
-#
 #  vim:ts=2:sw=2:et
 #
+
 RBD_MODULE=rbd
-RBD_DIR=rbd
 DOCKER_IMAGE=REGISTRY/store-client:TAG
 COMMAND_OPTIONS=($@)
 COMMAND=${COMMAND_OPTIONS[0]}
@@ -29,76 +26,22 @@ run_rbd() {
   RET=$?
 }
 
-run_rbd_exec() {
-  /usr/bin/docker exec ceph-client rbd $@
-  RET=$?
-}
-
-get_device_from_image() {
-  run_rbd "showmapped" | grep "${1} " | tail -n1 | awk "{ print \$5 }"
-}
-
-image_mapped() {
-  run_rbd "showmapped" | grep -q "${1} " && return 0 || return 1
-}
-
 kernel_module() {
   if ! sudo /usr/sbin/lsmod | grep -q ^${RBD_MODULE}; then
     sudo /usr/sbin/modprobe ${RBD_MODULE} || failed "Failed to load the kernel rbd driver: ${RBD_MODULE}"
   fi
 }
 
-mapping_image() {
-  # step: get the image name from the command line options
-  IMAGE_NAME=${COMMAND_OPTIONS[1]}
-
-  # step: map the drive
-  run_rbd $@
-
-  # step: check if the mount was successful
-  if image_mapped $IMAGE_NAME; then
-    # step: get the device name
-    DEVICE_NAME=$(get_device_from_image $IMAGE_NAME)
-    DEVICE_ID=$(echo ${DEVICE_NAME} |  egrep -o '([0-9]+$)')
-    DEVICE_PATH="/sys/bus/rbd/devices/${DEVICE_ID}"
-    POOL_NAME=$(cat ${DEVICE_PATH}/pool)
-    IMAGE_LINK="/dev/${RBD_DIR}/${POOL_NAME}/${IMAGE_NAME}"
-    # step: ensure we have the device path
-    sudo mkdir -p /dev/rbd/${POOL_NAME}
-    # step: create the symlink
-    sudo ln -fs $DEVICE_NAME ${IMAGE_LINK}
-  fi
-}
-
-unmapping_image() {
-  IMAGE_LINK=""
-  IMAGE_NAME=""
-  # step: find the symlink
-  DEVICE_NAME=${COMMAND_OPTIONS[1]}
-  if [[ "$DEVICE_NAME" =~ ^\/dev\/rbd[0-9]+$ ]]; then
-    DEVICE_ID=$(echo ${DEVICE_NAME} | egrep -o '([0-9]+$)')
-    DEVICE_PATH="/sys/bus/rbd/devices/${DEVICE_ID}"
-    if [ -d "${DEVICE_PATH}" ]; then
-      POOL_NAME=$(cat ${DEVICE_PATH}/pool)
-      IMAGE_NAME=$(cat ${DEVICE_PATH}/name)
-      IMAGE_LINK="/dev/${RBD_DIR}/${POOL_NAME}/${IMAGE_NAME}"
-    fi
-  fi
-  # step: remove the device
-  run_rbd $@
-
-  # step: remove the symlink
-  [ -n "${IMAGE_LINK}" -a -L "${IMAGE_LINK}" ] && sudo rm -f $IMAGE_LINK
+run_rbd_exec() {
+  /usr/bin/docker exec ceph-client rbd $@
+  RET=$?
 }
 
 # step: ensure the kernel support module
 kernel_module
-
 # step: process the command
 case "$COMMAND" in
   lock)     run_rbd_exec $@;    ;;
-  map)      mapping_image $@;   ;;
-  unmap)    unmapping_image $@; ;;
   *)        run_rbd $@;         ;;
 esac
 
